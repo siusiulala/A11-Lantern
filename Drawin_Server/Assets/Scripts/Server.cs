@@ -23,6 +23,7 @@ public class Server : MonoBehaviour {
     public ParticleSystem particleSystem1;
     bool newImgComing1 = false;
     bool newImgComing2 = false;
+    bool removeImg1 = false;
     string receivedPath;
     string imageURL1 = "";
     string imageURL2 = "";
@@ -255,6 +256,21 @@ public class Server : MonoBehaviour {
             StartCoroutine(ChangeImage2());
             newImgComing2 = false;
         }
+
+        if(removeImg1)
+        {
+            Texture2D texture = new Texture2D(128, 128);
+            imgPlane1.GetComponent<Renderer>().material.mainTexture = texture;
+            try
+            {
+                File.Delete(imageURL1);
+            }
+            catch(Exception e)
+            {
+                print(e.Message);
+            }
+            removeImg1 = false;
+        }
 	}
     IEnumerator ChangeImage1()
     {
@@ -279,7 +295,16 @@ public class Server : MonoBehaviour {
             //    
             yield return new WaitForEndOfFrame();
         }
-        imgPlane1.GetComponent<Renderer>().material.mainTexture = www.texture;
+        Texture2D source = www.texture;
+        Texture2D textureRev = new Texture2D(source.width, source.height);
+        Color[] pix = source.GetPixels(0, 0, source.width, source.height);
+        for(int i=0;i<pix.Length;i++)
+        {
+            pix[i] = new Color(1f - pix[i].r, 1f - pix[i].g, 1f - pix[i].b);
+        }
+        textureRev.SetPixels(pix);
+        textureRev.Apply();
+        imgPlane1.GetComponent<Renderer>().material.mainTexture = textureRev;
         particleSystem1.Stop();
         particleSystem1.gameObject.SetActive(false);
     }
@@ -429,7 +454,12 @@ public class Server : MonoBehaviour {
                                 if (msg.Contains("P2"))
                                     mesh2.MoveVertex(moveVertex, new Vector3(0f, 0f, 0.01f));
                             }
-                        
+
+                            if (msg.Contains("Clear"))
+                            {
+                                print("removeContent");
+                                removeImg1 = true;
+                            }
                         }
                         //string msg = Encoding.UTF8.GetString(data);
                         //guiText.text = header+"\n"+msg;
