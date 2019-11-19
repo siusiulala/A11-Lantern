@@ -15,46 +15,95 @@ public class Client : MonoBehaviour {
 
     //
     string serverIP = "127.0.0.1";
+    string projectorIP = "127.0.0.1";
     //
     Socket client;
+    bool startConnect = false;
+    //public GameObject disconnectDialog;
 
+    float socketCheckTimer = 3f;
+    const float socketCheckPeriod = 3f;
     //
-    Socket server;
-    public AsyncCallback pfnWorkerCallBack;
-    const int MAX_Buffer_Size = 1024;
-    delegate void SetTextCallback(int index, String text);
-    IAsyncResult Result;
-    public class SocketPacket
-    {
-        public Socket m_currentSocket;
-        public byte[] dataBuffer = new byte[MAX_Buffer_Size];
-        public StringBuilder sb = new StringBuilder();
-    }
+    //Socket server;
+    //public AsyncCallback pfnWorkerCallBack;
+    //const int MAX_Buffer_Size = 1024;
+    //delegate void SetTextCallback(int index, String text);
+    ////IAsyncResult Result;
+    //public class SocketPacket
+    //{
+    //    public Socket m_currentSocket;
+    //    public byte[] dataBuffer = new byte[MAX_Buffer_Size];
+    //    public StringBuilder sb = new StringBuilder();
+    //}
 
     public int clientId = 1;
     //public Image[] cornerBtns = new Image[4];
 
 	void Start () {
         DontDestroyOnLoad(this.gameObject);
-        if(PlayerPrefs.HasKey("HostIp"))
+        if (PlayerPrefs.HasKey("HostIp"))
         {
             serverIP = PlayerPrefs.GetString("HostIp");
         }
         GameObject.Find("ServerIpInput").GetComponent<InputField>().text = serverIP;
+
+        if (PlayerPrefs.HasKey("ProjectorIp"))
+        {
+            projectorIP = PlayerPrefs.GetString("ProjectorIp");
+        }
+        GameObject.Find("ProjectorIpInput").GetComponent<InputField>().text = projectorIP;
     }
 	
 	// Update is called once per frame
 	void Update () {
+
         if (client != null && client.Connected)
         {
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "1_Home")
+                ToDrawView();
+            else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "9_IpSetting")
+                ToSettingView();
         }
-	}
 
+        if (startConnect)
+        {
+            socketCheckTimer -= Time.deltaTime;
+            if (socketCheckTimer <= 0)
+            {
+                
+                if (SocketConnected(client) && Application.internetReachability != NetworkReachability.NotReachable)
+                {
+                    FindObjectOfType<DisconnectDialogController>().Hide();// disconnectDialog.SetActive(false);
+                }
+                else
+                {
+                    FindObjectOfType<DisconnectDialogController>().Show(); //disconnectDialog.SetActive(true);
+                    AsyncConnect();
+                }
+                socketCheckTimer = socketCheckPeriod;
+            }
+
+        }
+    }
+    
     private void OnApplicationQuit()
     {
-        client.Close();
+        if (client != null && client.Connected)
+        {
+            client.Close();
+        }
     }
 
+    bool SocketConnected(Socket s)
+    {
+        bool part1 = s.Poll(1000, SelectMode.SelectRead);
+        bool part2 = (s.Available == 0);
+        //print(part1 + ", " + part2);
+        if (part1 && part2)
+            return false;
+        else
+            return true;
+    }
     /// <summary>
     /// 連線到伺服器
     /// </summary>
@@ -62,6 +111,7 @@ public class Client : MonoBehaviour {
     {
         try
         {
+            startConnect = true;
             //埠及IP
             //IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5566);
             IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(serverIP), 5566);
@@ -85,12 +135,12 @@ public class Client : MonoBehaviour {
 
     }
 
-    public static void SendCallBack(IAsyncResult asyncResult)
-    {
-        Socket server = (System.Net.Sockets.Socket)asyncResult.AsyncState;
-        //int bytesSend = server.EndSend(asyncResult);
-        //server.Close();
-    }
+    //public static void SendCallBack(IAsyncResult asyncResult)
+    //{
+    //    Socket server = (System.Net.Sockets.Socket)asyncResult.AsyncState;
+    //    //int bytesSend = server.EndSend(asyncResult);
+    //    //server.Close();
+    //}
 
     public void SendFile(byte[] fileData)
     {
@@ -141,6 +191,7 @@ public class Client : MonoBehaviour {
 
         tcpClient.Client.Close();
 
+        ToLanternView();
         //fs.Close();
         /////////
         //print(fileData.Length);
@@ -223,31 +274,32 @@ public class Client : MonoBehaviour {
         //}
         //Debug.Log("End of SendFile");
     }
-    IEnumerator DoSendFile(byte[] fileData)
-    {
-        server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        IPEndPoint iped = new IPEndPoint(IPAddress.Parse(serverIP), 1999);
-        try
-        {
-            server.Connect(iped);
+    //IEnumerator DoSendFile(byte[] fileData)
+    //{
+    //    server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+    //    IPEndPoint iped = new IPEndPoint(IPAddress.Parse(serverIP), 1999);
+    //    try
+    //    {
+    //        server.Connect(iped);
 
-        }
-        catch (Exception se)
-        {
-            print(se.ToString());
-        }
-        yield return new WaitForSeconds(3);
-        string fileName = DateTime.Now.ToString("yyyyMMddhhmmss") + ".png";
-        byte[] fileNameByte = Encoding.ASCII.GetBytes(fileName);
-        //byte[] fileData = File.ReadAllBytes(openFileDialog.FileName.ToString());
-        byte[] clientData = new byte[4 + fileNameByte.Length + fileData.Length];
-        byte[] fileNameLen = BitConverter.GetBytes(fileNameByte.Length);
-        print(fileData.Length);
-        fileNameLen.CopyTo(clientData, 0);
-        fileNameByte.CopyTo(clientData, 4);
-        fileData.CopyTo(clientData, 4 + fileNameByte.Length);
-        server.BeginSend(clientData, 0, clientData.Length, SocketFlags.None, new AsyncCallback(SendCallBack), server);
-    }
+    //    }
+    //    catch (Exception se)
+    //    {
+    //        print(se.ToString());
+    //    }
+    //    yield return new WaitForSeconds(3);
+    //    string fileName = DateTime.Now.ToString("yyyyMMddhhmmss") + ".png";
+    //    byte[] fileNameByte = Encoding.ASCII.GetBytes(fileName);
+    //    //byte[] fileData = File.ReadAllBytes(openFileDialog.FileName.ToString());
+    //    byte[] clientData = new byte[4 + fileNameByte.Length + fileData.Length];
+    //    byte[] fileNameLen = BitConverter.GetBytes(fileNameByte.Length);
+    //    print(fileData.Length);
+    //    fileNameLen.CopyTo(clientData, 0);
+    //    fileNameByte.CopyTo(clientData, 4);
+    //    fileData.CopyTo(clientData, 4 + fileNameByte.Length);
+    //    server.BeginSend(clientData, 0, clientData.Length, SocketFlags.None, new AsyncCallback(SendCallBack), server);
+    //}
+
     public void AsyncSend(string message)
     {
         AsyncSend(client, message);
@@ -298,7 +350,15 @@ public class Client : MonoBehaviour {
                 {
                     int length = socket.EndReceive(asyncResult);
                     if(length>0)
-                        Debug.Log(Encoding.UTF8.GetString(data));
+                    {
+                        string msg = Encoding.UTF8.GetString(data);
+                        Debug.Log(msg);
+                        if (msg.Contains("Welcome"))
+                        {
+                            //ToDrawView();
+                        }
+                    }
+
                 }
                 catch (Exception)
                 {
@@ -326,7 +386,7 @@ public class Client : MonoBehaviour {
 
     public void ToDrawView()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("DrawView");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("2_DrawViewV1");
     }
 
     public void ToCalibView()
@@ -334,13 +394,31 @@ public class Client : MonoBehaviour {
         UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
     }
 
+    public void ToLanternView()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("3_Lantern");
+    }
 
-  
+    public void ToSettingView()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("5_SettingView");
+    }
 
     public void ConnectToServer(InputField ipInputField)
     {
         serverIP = ipInputField.text;
         PlayerPrefs.SetString("HostIp",serverIP);
+        PlayerPrefs.SetString("ProjectorIp", projectorIP);
         AsyncConnect();
+    }
+
+    public void ClientDisconnect()
+    {
+        startConnect = false;
+        if (client != null && client.Connected)
+        {
+            client.Disconnect(false);
+            client = null;
+        }
     }
 }

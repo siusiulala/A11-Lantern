@@ -34,7 +34,12 @@ namespace IndieStudio.DrawingAndColoring.Logic
 			}
 		}
 
-		public void PrintClickEvent(){
+        public void SettingClickEvent()
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("4_PasswordView");
+        }
+
+        public void PrintClickEvent(){
 			GameObject.FindObjectOfType<WebPrint> ().PrintScreen ();
 		}
 

@@ -179,36 +179,36 @@ namespace IndieStudio.DrawingAndColoring.Logic
 		/// </summary>
 		public void CheckUnDoRedoButtonsStatus(){
 
-			//Setting up references
-			if (undoBtn == null) {
-				undoBtn = GameObject.Find("UndoButton").GetComponent<Button>();
-			}
+			////Setting up references
+			//if (undoBtn == null) {
+			//	undoBtn = GameObject.Find("UndoButton").GetComponent<Button>();
+			//}
 			
-			if (redoBtn == null) {
-				redoBtn = GameObject.Find("RedoButton").GetComponent<Button>();
-			}
+			//if (redoBtn == null) {
+			//	redoBtn = GameObject.Find("RedoButton").GetComponent<Button>();
+			//}
 
-			if (undoBtn == null || redoBtn == null) {
-				Debug.LogError("Undefined Undo/Redo references");
-				return;
-			}
+			//if (undoBtn == null || redoBtn == null) {
+			//	Debug.LogError("Undefined Undo/Redo references");
+			//	return;
+			//}
 
-			if (GetPoolSize () == 0) {
-				DisableButton(undoBtn);
-				DisableButton(redoBtn);
-			} else {
-				if(pointer == GetPoolSize() - 1){
-					EnableButton(undoBtn);
-					DisableButton(redoBtn);
-				}
-				else if(pointer == -1){
-					DisableButton(undoBtn);
-					EnableButton(redoBtn);
-				}else{
-					EnableButton(undoBtn);
-					EnableButton(redoBtn);
-				}
-			}
+			//if (GetPoolSize () == 0) {
+			//	DisableButton(undoBtn);
+			//	DisableButton(redoBtn);
+			//} else {
+			//	if(pointer == GetPoolSize() - 1){
+			//		EnableButton(undoBtn);
+			//		DisableButton(redoBtn);
+			//	}
+			//	else if(pointer == -1){
+			//		DisableButton(undoBtn);
+			//		EnableButton(redoBtn);
+			//	}else{
+			//		EnableButton(undoBtn);
+			//		EnableButton(redoBtn);
+			//	}
+			//}
 		}
 
 		/// <summary>

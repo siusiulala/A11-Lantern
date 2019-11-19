@@ -93,7 +93,7 @@ namespace IndieStudio.DrawingAndColoring.Logic
 		/// <summary>
 		/// The tools in the scene.
 		/// </summary>
-		[HideInInspector]
+		//[HideInInspector]
 		public Tool [] tools ;
 
 		/// <summary>
@@ -161,10 +161,13 @@ namespace IndieStudio.DrawingAndColoring.Logic
 			///Load the current shape
 			LoadCurrentShape ();
 
-			//Show the shape's order
-			//ShapesCanvas.shapeOrder.gameObject.SetActive (true);
+            //Show the shape's order
+            //ShapesCanvas.shapeOrder.gameObject.SetActive (true);
 
-		}
+            CleanCurrentShapeScreen();
+
+
+        }
 
 		// Update is called once per frame
 		void Update ()
