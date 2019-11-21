@@ -26,8 +26,10 @@ public class IpSetting : MonoBehaviour {
 		
 	}
 
-    public void ConnectToServer(InputField ipInputField)
+    public void ConnectToServer()
     {
-        GameObject.Find("System").GetComponent<Client>().ConnectToServer(ipInputField);
+        InputField hostInputField = GameObject.Find("ServerIpInput").GetComponent<InputField>();
+        InputField projectorInputField = GameObject.Find("ProjectorIpInput").GetComponent<InputField>();
+        GameObject.Find("System").GetComponent<Client>().ConnectToServer(hostInputField, projectorInputField);
     }
 }

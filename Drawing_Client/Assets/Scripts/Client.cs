@@ -44,12 +44,14 @@ public class Client : MonoBehaviour {
         if (PlayerPrefs.HasKey("HostIp"))
         {
             serverIP = PlayerPrefs.GetString("HostIp");
+            print("serverIp: " + serverIP);
         }
         GameObject.Find("ServerIpInput").GetComponent<InputField>().text = serverIP;
 
         if (PlayerPrefs.HasKey("ProjectorIp"))
         {
             projectorIP = PlayerPrefs.GetString("ProjectorIp");
+            print("ProjectorIp: " + projectorIP);
         }
         GameObject.Find("ProjectorIpInput").GetComponent<InputField>().text = projectorIP;
     }
@@ -135,12 +137,16 @@ public class Client : MonoBehaviour {
 
     }
 
-    //public static void SendCallBack(IAsyncResult asyncResult)
-    //{
-    //    Socket server = (System.Net.Sockets.Socket)asyncResult.AsyncState;
-    //    //int bytesSend = server.EndSend(asyncResult);
-    //    //server.Close();
-    //}
+    public void SendCmdToProjector(byte[] cmdData, int port)
+    {
+        string IPAddress = projectorIP;
+
+        TcpClient tcpClient = new TcpClient(IPAddress, port);
+        tcpClient.SendTimeout = 600000;
+        tcpClient.ReceiveTimeout = 600000;
+        tcpClient.Client.Send(cmdData, cmdData.Length, SocketFlags.Partial);
+        tcpClient.Client.Close();
+    }
 
     public void SendFile(byte[] fileData)
     {
@@ -192,113 +198,8 @@ public class Client : MonoBehaviour {
         tcpClient.Client.Close();
 
         ToLanternView();
-        //fs.Close();
-        /////////
-        //print(fileData.Length);
-        //StartCoroutine(DoSendFile(fileData));
-        ////
-        //server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        //IPEndPoint iped = new IPEndPoint(IPAddress.Parse("192.168.0.116"), 1999);
-        //try
-        //{
-        //    server.Connect(iped);
-        //    string fileName = DateTime.Now.ToString("yyyyMMddhhmmss") + ".png";
-        //    byte[] fileNameByte = Encoding.ASCII.GetBytes(fileName);
-        //    //byte[] fileData = File.ReadAllBytes(openFileDialog.FileName.ToString());
-        //    byte[] clientData = new byte[4 + fileNameByte.Length + fileData.Length];
-        //    byte[] fileNameLen = BitConverter.GetBytes(fileNameByte.Length);
-        //    print(fileNameByte.Length);
-        //    fileNameLen.CopyTo(clientData, 0);
-        //    fileNameByte.CopyTo(clientData, 4);
-        //    fileData.CopyTo(clientData, 4 + fileNameByte.Length);
-        //    server.BeginSend(clientData, 0, clientData.Length, SocketFlags.None, new AsyncCallback(SendCallBack), server);
-        //}
-        //catch (Exception se)
-        //{
-        //    print(se.ToString());
-        //}
-        //while(!server.Connected)
-        //{
-            
-        //}
-
-
-        //if (client == null) return;
-        ////編碼
-        //byte[] headerData = Encoding.UTF8.GetBytes("###img###");
-        //var newData = MergeByteArray(headerData, data);
-        //try
-        //{
-        //    int totalsend = 0;
-        //    int datasize = newData.Length;
-        //    int dataleft = datasize;
-        //    while (totalsend < datasize)
-        //    {
-        //        int sendSize = (dataleft < 1024000) ? dataleft : 1024000;
-        //        print(sendSize);
-        //        client.BeginSend(newData.ToList().GetRange(totalsend,sendSize).ToArray(), totalsend,sendSize, SocketFlags.None, asyncResult =>
-        //        {
-        //            //完成傳送訊息
-        //            //int length = client.EndSend(asyncResult);
-        //        }, null);
-        //        totalsend += sendSize;
-        //        dataleft -= sendSize;
-        //    }
-
-        //    //client.BeginSend(newData, 0, newData.Length, SocketFlags.None, asyncResult =>
-        //    //{
-        //    //    //完成傳送訊息
-        //    //    int length = client.EndSend(asyncResult);
-        //    //}, null);
-        //}
-        //catch (Exception ex)
-        //{
-        //}
-
-        //Debug.Log("SendFile:" + data.Length); 
-        ////找到服务器的IP地址
-        //IPAddress address = IPAddress.Parse("127.0.0.1");
-        ////创建TcpClient对象实现与服务器的连接
-        //TcpClient fileClient = new TcpClient();
-        ////连接服务器
-        //fileClient.Connect(address, 888);
-        //using (client)
-        //{
-        //    //连接完服务器后便在客户端和服务端之间产生一个流的通道
-        //    NetworkStream ns = fileClient.GetStream();
-        //    using (ns)
-        //    {
-        //        //通过此通道将图片数据写入网络流，传向服务器端接收
-        //        ns.Write(data, 0, data.Length);
-        //    }
-        //}
-        //Debug.Log("End of SendFile");
+        
     }
-    //IEnumerator DoSendFile(byte[] fileData)
-    //{
-    //    server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-    //    IPEndPoint iped = new IPEndPoint(IPAddress.Parse(serverIP), 1999);
-    //    try
-    //    {
-    //        server.Connect(iped);
-
-    //    }
-    //    catch (Exception se)
-    //    {
-    //        print(se.ToString());
-    //    }
-    //    yield return new WaitForSeconds(3);
-    //    string fileName = DateTime.Now.ToString("yyyyMMddhhmmss") + ".png";
-    //    byte[] fileNameByte = Encoding.ASCII.GetBytes(fileName);
-    //    //byte[] fileData = File.ReadAllBytes(openFileDialog.FileName.ToString());
-    //    byte[] clientData = new byte[4 + fileNameByte.Length + fileData.Length];
-    //    byte[] fileNameLen = BitConverter.GetBytes(fileNameByte.Length);
-    //    print(fileData.Length);
-    //    fileNameLen.CopyTo(clientData, 0);
-    //    fileNameByte.CopyTo(clientData, 4);
-    //    fileData.CopyTo(clientData, 4 + fileNameByte.Length);
-    //    server.BeginSend(clientData, 0, clientData.Length, SocketFlags.None, new AsyncCallback(SendCallBack), server);
-    //}
 
     public void AsyncSend(string message)
     {
@@ -404,9 +305,17 @@ public class Client : MonoBehaviour {
         UnityEngine.SceneManagement.SceneManager.LoadScene("5_SettingView");
     }
 
-    public void ConnectToServer(InputField ipInputField)
+    public void ConnectToServer()
+    {
+        InputField hostInputField = GameObject.Find("ServerIpInput").GetComponent<InputField>();
+        InputField projectorInputField = GameObject.Find("ProjectorIpInput").GetComponent<InputField>();
+        ConnectToServer(hostInputField, projectorInputField);
+    }
+
+    public void ConnectToServer(InputField ipInputField, InputField ipInputField2)
     {
         serverIP = ipInputField.text;
+        projectorIP = ipInputField2.text;
         PlayerPrefs.SetString("HostIp",serverIP);
         PlayerPrefs.SetString("ProjectorIp", projectorIP);
         AsyncConnect();
