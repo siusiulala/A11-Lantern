@@ -13,7 +13,7 @@ using System.IO;
 
 public class Server : MonoBehaviour {
 
-    public float fadeTime = 10;
+    public float fadeTime = 3f;
     public MeshStudy mesh1;
     public MeshStudy mesh2;
     Thread fileStreamThread1;
@@ -21,6 +21,7 @@ public class Server : MonoBehaviour {
     public GameObject imgPlane1;
     public GameObject imgPlane2;
     public ParticleSystem particleSystem1;
+    bool needChangeImg = false;
     bool newImgComing1 = false;
     bool newImgComing2 = false;
     bool removeImg1 = false;
@@ -50,6 +51,8 @@ public class Server : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+        imgPlane1.GetComponent<Renderer>().material.mainTexture = Texture2D.blackTexture;
+
         receivedPath = Application.persistentDataPath + "/";
                                   
         StartSocket();
@@ -245,10 +248,11 @@ public class Server : MonoBehaviour {
     // Update is called once per frame
     void Update () {
         
-		if(newImgComing1)
+		if(newImgComing1 && needChangeImg)
         {
             StartCoroutine(ChangeImage1());
             newImgComing1 = false;
+            needChangeImg = false;
         }
 
         if (newImgComing2)
@@ -259,7 +263,7 @@ public class Server : MonoBehaviour {
 
         if(removeImg1)
         {
-            Texture2D texture = new Texture2D(128, 128);
+            Texture2D texture = Texture2D.blackTexture;
             imgPlane1.GetComponent<Renderer>().material.mainTexture = texture;
             try
             {
@@ -272,41 +276,77 @@ public class Server : MonoBehaviour {
             removeImg1 = false;
         }
 	}
+
     IEnumerator ChangeImage1()
     {
         WWW www = new WWW("file:///"+imageURL1);
         while (!www.isDone)
             yield return null;
-        int fadeFrame = (int)(50 * fadeTime);
-        for (int i = fadeFrame; i > fadeFrame/4; i-=4)
+        float timer = fadeTime;
+        while(timer>0)
         {
-            imgPlane1.GetComponent<Renderer>().material.color = new Color(1f / fadeFrame * i, 1f / fadeFrame * i, 1f / fadeFrame * i);
+            imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
             yield return new WaitForEndOfFrame();
+            timer -= Time.deltaTime;
         }
-        particleSystem1.Play();
-        particleSystem1.gameObject.SetActive(true);
-        yield return new WaitForSeconds(4);
-        imgPlane1.GetComponent<Renderer>().material.mainTexture = null;
+      
+        //particleSystem1.Play();
+        //particleSystem1.gameObject.SetActive(true);
+        //yield return new WaitForSeconds(4);
+        imgPlane1.GetComponent<Renderer>().material.mainTexture = Resources.Load<Texture2D>("whitelight_2");
         //imgPlane1.GetComponent<Renderer>().material.color = Color.white;
-        for (int i = fadeFrame/4; i < fadeFrame; i++)
+        /////
+        timer = 0;
+        while (timer < fadeTime)
         {
-            imgPlane1.GetComponent<Renderer>().material.color = new Color(1f / fadeFrame * i, 1f / fadeFrame * i, 1f / fadeFrame * i);
-            //if (i > fadeFrame / 2)
-            //    
+            imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
             yield return new WaitForEndOfFrame();
+            timer += Time.deltaTime;
         }
+        timer = fadeTime;
+        while (timer > 0)
+        {
+            imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            yield return new WaitForEndOfFrame();
+            timer -= Time.deltaTime;
+        }
+        timer = 0;
+        while (timer < fadeTime)
+        {
+            imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            yield return new WaitForEndOfFrame();
+            timer += Time.deltaTime;
+        }
+        timer = fadeTime;
+        while (timer > 0)
+        {
+            imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            yield return new WaitForEndOfFrame();
+            timer -= Time.deltaTime;
+        }
+        //particleSystem1.Stop();
+        //particleSystem1.gameObject.SetActive(false);
+        //////
+
         Texture2D source = www.texture;
         Texture2D textureRev = new Texture2D(source.width, source.height);
         Color[] pix = source.GetPixels(0, 0, source.width, source.height);
-        for(int i=0;i<pix.Length;i++)
+        for (int i = 0; i < pix.Length; i++)
         {
             pix[i] = new Color(1f - pix[i].r, 1f - pix[i].g, 1f - pix[i].b);
         }
         textureRev.SetPixels(pix);
         textureRev.Apply();
         imgPlane1.GetComponent<Renderer>().material.mainTexture = textureRev;
-        particleSystem1.Stop();
-        particleSystem1.gameObject.SetActive(false);
+        timer = 0;
+        while (timer < fadeTime)
+        {
+            imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            yield return new WaitForEndOfFrame();
+            timer += Time.deltaTime;
+        }
+
+
     }
     IEnumerator ChangeImage2()
     {
@@ -459,6 +499,12 @@ public class Server : MonoBehaviour {
                             {
                                 print("removeContent");
                                 removeImg1 = true;
+                            }
+
+                            if (msg.Contains("Show"))
+                            {
+                                print("needChangeImg");
+                                needChangeImg = true;
                             }
                         }
                         //string msg = Encoding.UTF8.GetString(data);
