@@ -13,6 +13,7 @@ public class Lantern : MonoBehaviour {
     public Text launchText;
     float holdTimer = 5f;
     bool isLaunched = false;
+    bool sendSignal = false;
     float lanternY = -1.8f;
     public GameObject finishCanvas;
 
@@ -71,6 +72,11 @@ public class Lantern : MonoBehaviour {
         }
         else
         {
+            if(!sendSignal)
+            {
+                GameObject.Find("System").GetComponent<Client>().AsyncSend("Show");
+                sendSignal = true;
+            }
             countdownText.gameObject.SetActive(false);
             launchText.gameObject.SetActive(true);
             lanternY += Time.deltaTime;
