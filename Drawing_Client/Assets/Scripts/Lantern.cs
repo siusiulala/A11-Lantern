@@ -14,8 +14,9 @@ public class Lantern : MonoBehaviour {
     float holdTimer = 5f;
     bool isLaunched = false;
     bool sendSignal = false;
-    float lanternY = -1.8f;
+    float lanternY = -4f;
     public GameObject finishCanvas;
+    public GameObject bg;
 
     // Use this for initialization
     void Start () {
@@ -56,7 +57,7 @@ public class Lantern : MonoBehaviour {
                 hintText.gameObject.SetActive(false);
                 countdownText.gameObject.SetActive(true);
                 holdTimer -= Time.deltaTime;
-                countdownText.text = "倒數 " + (int)holdTimer + " 秒";
+                countdownText.text = "   " + (int)holdTimer;
                 //print(holdTimer);
                 if (holdTimer <= 0)
                     isLaunched = true;
@@ -86,6 +87,7 @@ public class Lantern : MonoBehaviour {
             {
                 filledLantern.gameObject.SetActive(false);
                 launchText.gameObject.SetActive(false);
+                bg.SetActive(false);
                 finishCanvas.SetActive(true);
             }
         }

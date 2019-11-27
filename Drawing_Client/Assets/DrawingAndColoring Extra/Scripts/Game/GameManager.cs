@@ -123,6 +123,8 @@ namespace IndieStudio.DrawingAndColoring.Logic
 		public Camera drawCamera;
 
 
+        public ToolStatus[] toolStatuses;
+
 		void Awake(){
 
 			uiEvents = GameObject.FindObjectOfType<UIEvents> ();
@@ -999,5 +1001,14 @@ namespace IndieStudio.DrawingAndColoring.Logic
 				Area.shapesDrawingContents [i].lastPartSortingOrder = 0;
 			}
 		}
-	}
+
+        public void ToolClick(ToolStatus clickedTool)
+        {
+            foreach(ToolStatus status in toolStatuses)
+            {
+                status.Unclick();
+            }
+            clickedTool.Click();
+        }
+    }
 }
