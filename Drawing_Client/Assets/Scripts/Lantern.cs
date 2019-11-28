@@ -17,7 +17,7 @@ public class Lantern : MonoBehaviour {
     float lanternY = -4f;
     public GameObject finishCanvas;
     public GameObject bg;
-
+    public GameObject bg2;
     // Use this for initialization
     void Start () {
 		
@@ -81,13 +81,14 @@ public class Lantern : MonoBehaviour {
             countdownText.gameObject.SetActive(false);
             launchText.gameObject.SetActive(true);
             lanternY += Time.deltaTime;
-            filledLantern.transform.localPosition = new Vector3(0,lanternY, 0);
+            filledLantern.transform.localPosition = new Vector3(0,lanternY, -2f);
 
             if(lanternY>=7f)
             {
                 filledLantern.gameObject.SetActive(false);
                 launchText.gameObject.SetActive(false);
                 bg.SetActive(false);
+                bg2.SetActive(true);
                 finishCanvas.SetActive(true);
             }
         }

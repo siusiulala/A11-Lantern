@@ -41,7 +41,7 @@ public class ProjectorSetting : MonoBehaviour {
     {
         settingCurrentCorner = "RTop";
 
-        GameObject.Find("CornerButton0").GetComponent<Image>().color = new Color(0f, 0.5f, 1f);
+        GameObject.Find("CornerButton0").GetComponent<Image>().color = new Color(1f, 0.3f, 0.24f);
         GameObject.Find("CornerButton1").GetComponent<Image>().color = Color.white;
         GameObject.Find("CornerButton2").GetComponent<Image>().color = Color.white;
         GameObject.Find("CornerButton3").GetComponent<Image>().color = Color.white;
@@ -50,7 +50,7 @@ public class ProjectorSetting : MonoBehaviour {
     public void OnSettingLTopCorner()
     {
         settingCurrentCorner = "LTop";
-        GameObject.Find("CornerButton1").GetComponent<Image>().color = new Color(0f, 0.5f, 1f);
+        GameObject.Find("CornerButton1").GetComponent<Image>().color = new Color(1f, 0.3f, 0.24f);
         GameObject.Find("CornerButton0").GetComponent<Image>().color = Color.white;
         GameObject.Find("CornerButton2").GetComponent<Image>().color = Color.white;
         GameObject.Find("CornerButton3").GetComponent<Image>().color = Color.white;
@@ -59,7 +59,7 @@ public class ProjectorSetting : MonoBehaviour {
     public void OnSettingRBottomCorner()
     {
         settingCurrentCorner = "RBottom";
-        GameObject.Find("CornerButton3").GetComponent<Image>().color = new Color(0f, 0.5f, 1f);
+        GameObject.Find("CornerButton3").GetComponent<Image>().color = new Color(1f, 0.3f, 0.24f);
         GameObject.Find("CornerButton0").GetComponent<Image>().color = Color.white;
         GameObject.Find("CornerButton1").GetComponent<Image>().color = Color.white;
         GameObject.Find("CornerButton2").GetComponent<Image>().color = Color.white;
@@ -68,7 +68,7 @@ public class ProjectorSetting : MonoBehaviour {
     public void OnSettingLBottomCorner()
     {
         settingCurrentCorner = "LBottom";
-        GameObject.Find("CornerButton2").GetComponent<Image>().color = new Color(0f, 0.5f, 1f);
+        GameObject.Find("CornerButton2").GetComponent<Image>().color = new Color(1f, 0.3f, 0.24f);
         GameObject.Find("CornerButton0").GetComponent<Image>().color = Color.white;
         GameObject.Find("CornerButton1").GetComponent<Image>().color = Color.white;
         GameObject.Find("CornerButton3").GetComponent<Image>().color = Color.white;
