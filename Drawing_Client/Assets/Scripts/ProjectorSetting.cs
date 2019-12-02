@@ -13,6 +13,7 @@ public class ProjectorSetting : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         client = GameObject.Find("System").GetComponent<Client>();
+        client.Reconnect();
 	}
 	
 	// Update is called once per frame

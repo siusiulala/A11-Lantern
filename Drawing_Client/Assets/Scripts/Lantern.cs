@@ -20,8 +20,9 @@ public class Lantern : MonoBehaviour {
     public GameObject bg2;
     // Use this for initialization
     void Start () {
-		
-	}
+        GameObject.Find("System").GetComponent<Client>().Reconnect();
+
+    }
 
     // Update is called once per frame
     void Update() {

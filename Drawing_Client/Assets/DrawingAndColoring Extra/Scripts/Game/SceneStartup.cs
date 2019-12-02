@@ -29,7 +29,7 @@ namespace IndieStudio.DrawingAndColoring.Logic
 			
 			void OnDestroy ()
 			{
-					AdsManager.instance.HideAdvertisment ();
+					//AdsManager.instance.HideAdvertisment ();
 			}
 	}
 }

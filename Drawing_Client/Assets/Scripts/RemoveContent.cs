@@ -4,7 +4,12 @@ using UnityEngine;
 
 public class RemoveContent : MonoBehaviour {
 
-  
+
+    void Start()
+    {
+        GameObject.Find("System").GetComponent<Client>().Reconnect();
+    }
+
     public void DoRemoveContent()
     {
         GameObject.Find("System").GetComponent<Client>().AsyncSend("Clear");

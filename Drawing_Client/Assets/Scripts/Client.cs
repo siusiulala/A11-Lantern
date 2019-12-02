@@ -67,25 +67,27 @@ public class Client : MonoBehaviour {
                 ToSettingView();
         }
 
-        if (startConnect)
-        {
-            socketCheckTimer -= Time.deltaTime;
-            if (socketCheckTimer <= 0)
-            {
+        //if (startConnect)
+        //{
+        //    socketCheckTimer -= Time.deltaTime;
+        //    if (socketCheckTimer <= 0)
+        //    {
                 
-                if (SocketConnected(client) && Application.internetReachability != NetworkReachability.NotReachable)
-                {
-                    FindObjectOfType<DisconnectDialogController>().Hide();// disconnectDialog.SetActive(false);
-                }
-                else
-                {
-                    FindObjectOfType<DisconnectDialogController>().Show(); //disconnectDialog.SetActive(true);
-                    AsyncConnect();
-                }
-                socketCheckTimer = socketCheckPeriod;
-            }
+        //        if (SocketConnected(client) && Application.internetReachability != NetworkReachability.NotReachable)
+        //        {
+        //            print(Application.internetReachability);
+        //            FindObjectOfType<DisconnectDialogController>().Hide();// disconnectDialog.SetActive(false);
+        //        }
+        //        else
+        //        {
+        //            print(Application.internetReachability);
+        //            FindObjectOfType<DisconnectDialogController>().Show(); //disconnectDialog.SetActive(true);
+        //            AsyncConnect();
+        //        }
+        //        socketCheckTimer = socketCheckPeriod;
+        //    }
 
-        }
+        //}
     }
     
     private void OnApplicationQuit()
@@ -100,7 +102,7 @@ public class Client : MonoBehaviour {
     {
         bool part1 = s.Poll(1000, SelectMode.SelectRead);
         bool part2 = (s.Available == 0);
-        //print(part1 + ", " + part2);
+        print(part1 + ", " + part2);
         if (part1 && part2)
             return false;
         else
@@ -329,5 +331,11 @@ public class Client : MonoBehaviour {
             client.Disconnect(false);
             client = null;
         }
+    }
+
+    public void Reconnect()
+    {
+        ClientDisconnect();
+        AsyncConnect();
     }
 }
