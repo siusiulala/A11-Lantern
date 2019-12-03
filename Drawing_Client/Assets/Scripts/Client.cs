@@ -45,6 +45,8 @@ public class Client : MonoBehaviour {
         {
             serverIP = PlayerPrefs.GetString("HostIp");
             print("serverIp: " + serverIP);
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "1_Home")
+                ToDrawView();
         }
         GameObject.Find("ServerIpInput").GetComponent<InputField>().text = serverIP;
 
