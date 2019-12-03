@@ -91,22 +91,48 @@ namespace IndieStudio.DrawingAndColoring.Logic
 			yield return new WaitForEndOfFrame();
             //Texture2D texture = new Texture2D(Screen.width / 2, Screen.height / 2);
             //texture.ReadPixels(new Rect(Screen.width / 4, Screen.height / 4, Screen.width / 2, Screen.height / 2), 0, 0);
-			Texture2D texture = new Texture2D(Screen.width, Screen.height);
-            texture.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
+            Texture2D texture = new Texture2D(1200 * Screen.width / 1200, 1540 * Screen.height / 1920);
+            print(texture.width +","+texture.height);
+            texture.ReadPixels(new Rect(0, 0, 1200 * Screen.width / 1200, 1540 * Screen.height / 1920), 0, 0);
 			texture.Apply();
-            Texture2D textureR = RotateTexture(texture, false);
-			flashEffect.SetTrigger ("Run");
-			if(flashSFX !=null)
-				AudioSource.PlayClipAtPoint (flashSFX, Vector3.zero, 1);
+            //Texture2D textureR = RotateTexture(texture, false);
+            /*
+            Texture2D textureBig = new Texture2D(2464, 1540);
+            var fillColorArray = textureBig.GetPixels();
+            for (var i = 0; i < fillColorArray.Length; ++i)
+            {
+                fillColorArray[i] = Color.white;
+            }
+
+            textureBig.SetPixels(fillColorArray);
+
+            textureBig.Apply();
+
+
+            for (int y = 0; y < texture.height; y++)
+            {
+                for (int x = 0; x < texture.width; x++)
+                {
+                    Color color = texture.GetPixel(x, y);
+                    textureBig.SetPixel(x+632, y, color);
+                }
+            }
+            textureBig.Apply();*/
+
+            flashEffect.SetTrigger ("Run");
+			//if(flashSFX !=null)
+			//	AudioSource.PlayClipAtPoint (flashSFX, Vector3.zero, 1);
 			yield return new WaitForSeconds (1);
 			ShowObjects ();
 			if(bottomLogo!=null)
 				bottomLogo.gameObject.SetActive (false);
-            File.WriteAllBytes(Application.persistentDataPath + "/"+imageName+".png", textureR.EncodeToPNG());
-			//Application.ExternalCall("PrintImage", System.Convert.ToBase64String(texture.EncodeToPNG()),imageName);
-			isRunning = false;
+#if UNITY_EDITOR
+            File.WriteAllBytes(Application.persistentDataPath + "/" + imageName + ".png", texture.EncodeToPNG());
+#endif
+            //Application.ExternalCall("PrintImage", System.Convert.ToBase64String(texture.EncodeToPNG()),imageName);
+            isRunning = false;
             //GameObject.FindObjectOfType<Client>().AsyncSend(System.Convert.ToBase64String(texture.EncodeToPNG()));
-            GameObject.FindObjectOfType<Client>().SendFile(textureR.EncodeToPNG());
+            GameObject.FindObjectOfType<Client>().SendFile(texture.EncodeToPNG());
 		}
 
 		/// <summary>
