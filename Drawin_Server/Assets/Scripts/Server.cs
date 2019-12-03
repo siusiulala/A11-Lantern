@@ -17,14 +17,18 @@ public class Server : MonoBehaviour {
     public MeshStudy mesh1;
     public MeshStudy mesh2;
     Thread fileStreamThread1;
-    Thread fileStreamThread2;
+    //Thread fileStreamThread2;
     public GameObject imgPlane1;
     public GameObject imgPlane2;
     public ParticleSystem particleSystem1;
     bool needChangeImg = false;
     bool newImgComing1 = false;
     bool newImgComing2 = false;
+    bool calibrateMode = false;
     bool removeImg1 = false;
+    bool hideTimerStart = false;
+    int showPeriod = 300;
+    float hideTimer;
     string receivedPath;
     string imageURL1 = "";
     string imageURL2 = "";
@@ -51,8 +55,11 @@ public class Server : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        imgPlane1.GetComponent<Renderer>().material.mainTexture = Texture2D.blackTexture;
+        Cursor.visible = false;
+        StartCoroutine(StartUpFullscreen());
 
+        imgPlane1.GetComponent<Renderer>().material.mainTexture = Texture2D.blackTexture;
+        
         receivedPath = Application.persistentDataPath + "/";
                                   
         StartSocket();
@@ -64,8 +71,28 @@ public class Server : MonoBehaviour {
         //newsock.BeginAccept(new AsyncCallback(OnClientConnect), null);
         fileStreamThread1 = new Thread(FileStreamProcess1);
         fileStreamThread1.Start();
-        fileStreamThread2 = new Thread(FileStreamProcess2);
-        fileStreamThread2.Start();
+        //fileStreamThread2 = new Thread(FileStreamProcess2);
+        //fileStreamThread2.Start();
+
+        print(Application.dataPath);
+        if (PlayerPrefs.HasKey("ShowPeriod"))
+        {
+            showPeriod = PlayerPrefs.GetInt("ShowPeriod");
+            print(showPeriod);
+        }
+        else
+        {
+            PlayerPrefs.SetInt("ShowPeriod", 300);
+            showPeriod = 300;
+        }
+       
+    }
+
+    IEnumerator StartUpFullscreen()
+    {
+        Screen.SetResolution(1920, 1080, false);
+        yield return new WaitForSeconds(1f);
+        Screen.SetResolution(1920, 1080, true);
     }
 
     void FileStreamProcess1()
@@ -261,6 +288,13 @@ public class Server : MonoBehaviour {
             newImgComing2 = false;
         }
 
+        if(calibrateMode)
+        {
+            imgPlane1.GetComponent<Renderer>().material.mainTexture = Resources.Load<Texture2D>("cali");
+            imgPlane1.SetActive(true);
+            calibrateMode = false;
+        }
+
         if(removeImg1)
         {
             Texture2D texture = Texture2D.blackTexture;
@@ -275,10 +309,22 @@ public class Server : MonoBehaviour {
             }
             removeImg1 = false;
         }
+
+        if (hideTimerStart)
+        {
+            hideTimer -= Time.deltaTime;
+            if(hideTimer<=0)
+            {
+                imgPlane1.SetActive(false);
+                 hideTimerStart = false;
+            }
+
+        }
 	}
 
     IEnumerator ChangeImage1()
     {
+        imgPlane1.SetActive(true);
         WWW www = new WWW("file:///"+imageURL1);
         while (!www.isDone)
             yield return null;
@@ -293,7 +339,7 @@ public class Server : MonoBehaviour {
         //particleSystem1.Play();
         //particleSystem1.gameObject.SetActive(true);
         //yield return new WaitForSeconds(4);
-        imgPlane1.GetComponent<Renderer>().material.mainTexture = Resources.Load<Texture2D>("whitelight_2");
+        imgPlane1.GetComponent<Renderer>().material.mainTexture = Resources.Load<Texture2D>("whitelight_3");
         //imgPlane1.GetComponent<Renderer>().material.color = Color.white;
         /////
         timer = 0;
@@ -345,8 +391,8 @@ public class Server : MonoBehaviour {
             yield return new WaitForEndOfFrame();
             timer += Time.deltaTime;
         }
-
-
+        hideTimer = (float)showPeriod;
+        hideTimerStart = true;
     }
     IEnumerator ChangeImage2()
     {
@@ -447,52 +493,56 @@ public class Server : MonoBehaviour {
                             byte[] msgData = data.ToList().GetRange(9, data.Length-9).ToArray(); 
                             string msg = Encoding.UTF8.GetString(msgData);
                             print(msg);
-                            int moveVertex = 1;
+                            int moveVertex = 0;
 
                             if (msg.Contains("RTop"))
                             {
-                                moveVertex = 1;
+                                moveVertex = 0;
                             }
                             else if (msg.Contains("LTop"))
                             {
-                                moveVertex = 2;
+                                moveVertex = 1;
                             }
                             else if (msg.Contains("LBottom"))
                             {
-                                moveVertex = 3;
+                                moveVertex = 2;
                             }
                             else if (msg.Contains("RBottom"))
                             {
-                                moveVertex = 0;
+                                moveVertex = 3;
                             }
 
-                            if(msg.Contains("Right"))
+                            if(msg.Contains("Up"))
                             {
                                 if (msg.Contains("P1"))
                                     mesh1.MoveVertex(moveVertex, new Vector3(0f, 0.01f, 0f));
-                                if (msg.Contains("P2"))
-                                    mesh2.MoveVertex(moveVertex, new Vector3(0f, 0.01f, 0f));
-                            }
-                            else if (msg.Contains("Left"))
-                            {
-                                if (msg.Contains("P1"))
-                                    mesh1.MoveVertex(moveVertex, new Vector3(0f, -0.01f, 0f));
-                                if (msg.Contains("P2"))
-                                    mesh2.MoveVertex(moveVertex, new Vector3(0f, -0.01f, 0f));
-                            }
-                            else if (msg.Contains("Up"))
-                            {
-                                if (msg.Contains("P1"))
-                                    mesh1.MoveVertex(moveVertex, new Vector3(0f, 0f, -0.01f));
-                                if (msg.Contains("P2"))
-                                    mesh2.MoveVertex(moveVertex, new Vector3(0f, 0f, -0.01f));
+                                //if (msg.Contains("P2"))
+                                //    mesh2.MoveVertex(moveVertex, new Vector3(0f, 0.01f, 0f));
+                                calibrateMode = true;
                             }
                             else if (msg.Contains("Down"))
                             {
                                 if (msg.Contains("P1"))
+                                    mesh1.MoveVertex(moveVertex, new Vector3(0f, -0.01f, 0f));
+                                //if (msg.Contains("P2"))
+                                //    mesh2.MoveVertex(moveVertex, new Vector3(0f, -0.01f, 0f));
+                                calibrateMode = true;
+                            }
+                            else if (msg.Contains("Left"))
+                            {
+                                if (msg.Contains("P1"))
+                                    mesh1.MoveVertex(moveVertex, new Vector3(0f, 0f, -0.01f));
+                                //if (msg.Contains("P2"))
+                                //    mesh2.MoveVertex(moveVertex, new Vector3(0f, 0f, -0.01f));
+                                calibrateMode = true;
+                            }
+                            else if (msg.Contains("Right"))
+                            {
+                                if (msg.Contains("P1"))
                                     mesh1.MoveVertex(moveVertex, new Vector3(0f, 0f, 0.01f));
-                                if (msg.Contains("P2"))
-                                    mesh2.MoveVertex(moveVertex, new Vector3(0f, 0f, 0.01f));
+                                //if (msg.Contains("P2"))
+                                //    mesh2.MoveVertex(moveVertex, new Vector3(0f, 0f, 0.01f));
+                                calibrateMode = true;
                             }
 
                             if (msg.Contains("Clear"))
