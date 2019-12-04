@@ -307,6 +307,7 @@ public class Server : MonoBehaviour {
             {
                 print(e.Message);
             }
+            imgPlane1.SetActive(false);
             removeImg1 = false;
         }
 
