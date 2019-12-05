@@ -15,15 +15,10 @@ public class Server : MonoBehaviour {
 
     public float fadeTime = 3f;
     public MeshStudy mesh1;
-    public MeshStudy mesh2;
     Thread fileStreamThread1;
-    //Thread fileStreamThread2;
     public GameObject imgPlane1;
-    public GameObject imgPlane2;
-    public ParticleSystem particleSystem1;
     bool needChangeImg = false;
     bool newImgComing1 = false;
-    bool newImgComing2 = false;
     bool calibrateMode = false;
     bool removeImg1 = false;
     bool hideTimerStart = false;
@@ -31,7 +26,6 @@ public class Server : MonoBehaviour {
     float hideTimer;
     string receivedPath;
     string imageURL1 = "";
-    string imageURL2 = "";
 
     Socket socketListen;//用於監聽的socket
     Socket socketConnect;//用於通訊的socket
@@ -71,8 +65,6 @@ public class Server : MonoBehaviour {
         //newsock.BeginAccept(new AsyncCallback(OnClientConnect), null);
         fileStreamThread1 = new Thread(FileStreamProcess1);
         fileStreamThread1.Start();
-        //fileStreamThread2 = new Thread(FileStreamProcess2);
-        //fileStreamThread2.Start();
 
         print(Application.dataPath);
         if (PlayerPrefs.HasKey("ShowPeriod"))
@@ -160,118 +152,6 @@ public class Server : MonoBehaviour {
         }
     }
 
-    void FileStreamProcess2()
-    {
-        //
-        int Port = 5502;
-        TcpListener listener = new TcpListener(IPAddress.Any, Port);
-        listener.Start();
-        while (true)
-        {
-            Socket socket = listener.AcceptSocket();
-
-            int bufferSize = 1024;
-            byte[] buffer = null;
-            byte[] header = null;
-            string headerStr = "";
-            string fileName = "";
-            int filesize = 0;
-
-
-            header = new byte[bufferSize];
-
-            socket.Receive(header);
-
-            headerStr = Encoding.ASCII.GetString(header);
-
-
-            string[] splitted = headerStr.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-            Dictionary<string, string> headers = new Dictionary<string, string>();
-            foreach (string s in splitted)
-            {
-                if (s.Contains(":"))
-                {
-                    headers.Add(s.Substring(0, s.IndexOf(":")), s.Substring(s.IndexOf(":") + 1));
-                }
-
-            }
-            //Get filesize from header
-            filesize = Convert.ToInt32(headers["Content-length"]);
-            //Get filename from header
-            fileName = headers["Filename"];
-            print(receivedPath + fileName);
-            print(filesize);
-
-            int bufferCount = Convert.ToInt32(Math.Ceiling((double)filesize / (double)bufferSize));
-
-
-            FileStream fs = new FileStream(receivedPath + fileName, FileMode.OpenOrCreate);
-
-            while (filesize > 0)
-            {
-                buffer = new byte[bufferSize];
-
-                int size = socket.Receive(buffer, SocketFlags.Partial);
-
-                fs.Write(buffer, 0, size);
-
-                filesize -= size;
-            }
-
-
-            fs.Close();
-            newImgComing2 = true;
-            imageURL2 = receivedPath + fileName;
-        }
-    }
-
-   /* public void OnClientConnect(IAsyncResult asyn)
-    {
-        try
-        {
-            WorkerSocket[ClientCount] = newsock.EndAccept(asyn);
-            theSocPkt = new SocketPacket();
-//            WaitForData(WorkerSocket[ClientCount]);
-           // ++ClientCount;
-            newsock.BeginAccept(new AsyncCallback(OnClientConnect), null);
-        }
-        catch (ObjectDisposedException) { Debug.Log("OnClientConnection: Socket has been closed\n"); }
-        catch (SocketException se) { Debug.Log(se.Message); }
-        catch (Exception es) { Debug.Log(es.Message); }
-    }*/
-  /*  public void WaitForData(Socket soc)
-    {
-        try
-        {
-            Socket clientSock = soc;
-            byte[] clientData = new byte[1024 * 50000];
-//            string receivedPath = Application.dataPath + "/../";//"C:/123/";
-            int receivedBytesLen = clientSock.Receive(clientData);
-            print(receivedBytesLen);
-            //print(Encoding.ASCII.GetString(clientData));
-            int fileNameLen = BitConverter.ToInt32(clientData, 0);
-            string fileName = Encoding.ASCII.GetString(clientData, 4, fileNameLen);
-            imageURL = receivedPath + fileName;
-            print(imageURL);
-            BinaryWriter bWrite = new BinaryWriter(File.Open(receivedPath + fileName, FileMode.Append));
-            bWrite.Write(clientData, 4 + fileNameLen, receivedBytesLen - 4 - fileNameLen);
-            bWrite.Close();
-            soc.BeginReceive(theSocPkt.dataBuffer, 0,
-                 theSocPkt.dataBuffer.Length,
-                 SocketFlags.None,
-                  new AsyncCallback(ReceiveCallBack),
-                 theSocPkt);
-        }
-        catch (SocketException se) { Debug.Log(se.Message); }
-        catch (Exception es) { Debug.Log(es.Message); }
-    }*/
-
-/*public  void ReceiveCallBack(IAsyncResult asyncResult)
-    {
-        newImgComing = true;
-    }*/
-
-
     // Update is called once per frame
     void Update () {
         
@@ -281,13 +161,7 @@ public class Server : MonoBehaviour {
             newImgComing1 = false;
             needChangeImg = false;
         }
-
-        if (newImgComing2)
-        {
-            StartCoroutine(ChangeImage2());
-            newImgComing2 = false;
-        }
-
+        
         if(calibrateMode)
         {
             imgPlane1.GetComponent<Renderer>().material.mainTexture = Resources.Load<Texture2D>("cali");
@@ -337,9 +211,6 @@ public class Server : MonoBehaviour {
             timer -= Time.deltaTime;
         }
       
-        //particleSystem1.Play();
-        //particleSystem1.gameObject.SetActive(true);
-        //yield return new WaitForSeconds(4);
         imgPlane1.GetComponent<Renderer>().material.mainTexture = Resources.Load<Texture2D>("whitelight_3");
         //imgPlane1.GetComponent<Renderer>().material.color = Color.white;
         /////
@@ -371,8 +242,6 @@ public class Server : MonoBehaviour {
             yield return new WaitForEndOfFrame();
             timer -= Time.deltaTime;
         }
-        //particleSystem1.Stop();
-        //particleSystem1.gameObject.SetActive(false);
         //////
 
         Texture2D source = www.texture;
@@ -394,33 +263,6 @@ public class Server : MonoBehaviour {
         }
         hideTimer = (float)showPeriod;
         hideTimerStart = true;
-    }
-    IEnumerator ChangeImage2()
-    {
-        WWW www = new WWW("file:///" + imageURL2);
-        while (!www.isDone)
-            yield return null;
-        for (int i = 100; i > 0; i--)
-        {
-            imgPlane2.GetComponent<Renderer>().material.color = new Color(0.01f * i, 0.01f * i, 0.01f * i);
-            yield return new WaitForEndOfFrame();
-        }
-        imgPlane2.GetComponent<Renderer>().material.mainTexture = www.texture;
-        //imgPlane2.GetComponent<Renderer>().material.color = Color.white;
-        for (int i = 0; i < 100; i++)
-        {
-            imgPlane2.GetComponent<Renderer>().material.color = new Color(0.01f * i, 0.01f * i, 0.01f * i);
-            yield return new WaitForEndOfFrame();
-        }
-    }
-    private void OnApplicationQuit()
-    {
-        foreach(Socket clientSocket in dicClient.Values)
-        {
-            clientSocket.Close();
-        }
-        socketConnect.Close();
-        socketListen.Close();
     }
 
     public void StartSocket()
@@ -516,33 +358,25 @@ public class Server : MonoBehaviour {
                             if(msg.Contains("Up"))
                             {
                                 if (msg.Contains("P1"))
-                                    mesh1.MoveVertex(moveVertex, new Vector3(0f, 0.01f, 0f));
-                                //if (msg.Contains("P2"))
-                                //    mesh2.MoveVertex(moveVertex, new Vector3(0f, 0.01f, 0f));
+                                    mesh1.MoveVertex(moveVertex, new Vector3(0f, 0.005f, 0f));
                                 calibrateMode = true;
                             }
                             else if (msg.Contains("Down"))
                             {
                                 if (msg.Contains("P1"))
-                                    mesh1.MoveVertex(moveVertex, new Vector3(0f, -0.01f, 0f));
-                                //if (msg.Contains("P2"))
-                                //    mesh2.MoveVertex(moveVertex, new Vector3(0f, -0.01f, 0f));
+                                    mesh1.MoveVertex(moveVertex, new Vector3(0f, -0.005f, 0f));
                                 calibrateMode = true;
                             }
                             else if (msg.Contains("Left"))
                             {
                                 if (msg.Contains("P1"))
-                                    mesh1.MoveVertex(moveVertex, new Vector3(0f, 0f, -0.01f));
-                                //if (msg.Contains("P2"))
-                                //    mesh2.MoveVertex(moveVertex, new Vector3(0f, 0f, -0.01f));
+                                    mesh1.MoveVertex(moveVertex, new Vector3(0f, 0f, -0.005f));
                                 calibrateMode = true;
                             }
                             else if (msg.Contains("Right"))
                             {
                                 if (msg.Contains("P1"))
-                                    mesh1.MoveVertex(moveVertex, new Vector3(0f, 0f, 0.01f));
-                                //if (msg.Contains("P2"))
-                                //    mesh2.MoveVertex(moveVertex, new Vector3(0f, 0f, 0.01f));
+                                    mesh1.MoveVertex(moveVertex, new Vector3(0f, 0f, 0.005f));
                                 calibrateMode = true;
                             }
 
