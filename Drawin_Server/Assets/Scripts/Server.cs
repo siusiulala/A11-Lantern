@@ -164,7 +164,7 @@ public class Server : MonoBehaviour {
         
         if(calibrateMode)
         {
-            imgPlane1.GetComponent<Renderer>().material.mainTexture = Resources.Load<Texture2D>("cali");
+            imgPlane1.GetComponent<Renderer>().material.mainTexture = Resources.Load<Texture2D>("cali2");
             imgPlane1.SetActive(true);
             calibrateMode = false;
         }
