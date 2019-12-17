@@ -13,7 +13,8 @@ using System.IO;
 
 public class Server : MonoBehaviour {
 
-    public float fadeTime = 3f;
+    public Image fadeMask;
+    float fadeTime = 1f;
     public MeshStudy mesh1;
     Thread fileStreamThread1;
     public GameObject imgPlane1;
@@ -31,6 +32,9 @@ public class Server : MonoBehaviour {
     Socket socketConnect;//用於通訊的socket
     string RemoteEndPoint;     //客戶端的網路節點  
     Dictionary<string, Socket> dicClient = new Dictionary<string, Socket>();//連線的客戶端集合
+
+    bool autoShowFlag = false;
+    float autoShowTimer = 15f;
 
     const int MAX_CLIENTS = 10;
     const int MAX_Buffer_Size = 1024 * 50000;
@@ -141,25 +145,40 @@ public class Server : MonoBehaviour {
                 int size = socket.Receive(buffer, SocketFlags.Partial);
 
                 fs.Write(buffer, 0, size);
-
                 filesize -= size;
             }
 
+            AsyncSend(socketConnect, string.Format("Receive file size: {0}", fs.Length));
 
             fs.Close();
+            needChangeImg = false;
             newImgComing1 = true;
             imageURL1 = receivedPath + fileName;
+
+            autoShowFlag = true;
+            autoShowTimer = 15f;
         }
     }
 
     // Update is called once per frame
     void Update () {
-        
+
+        if(autoShowFlag)
+        {
+            autoShowTimer -= Time.deltaTime;
+            if(autoShowTimer <= 0)
+            {
+                needChangeImg = true;
+                autoShowFlag = false;
+            }
+        }
+
 		if(newImgComing1 && needChangeImg)
         {
             StartCoroutine(ChangeImage1());
             newImgComing1 = false;
             needChangeImg = false;
+            autoShowFlag = false;
         }
         
         if(calibrateMode)
@@ -206,39 +225,44 @@ public class Server : MonoBehaviour {
         float timer = fadeTime;
         while(timer>0)
         {
-            imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            // imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            fadeMask.color = new Color(0, 0, 0, 1 - timer);
             yield return new WaitForEndOfFrame();
             timer -= Time.deltaTime;
         }
       
-        imgPlane1.GetComponent<Renderer>().material.mainTexture = Resources.Load<Texture2D>("whitelight_3");
+        imgPlane1.GetComponent<Renderer>().material.mainTexture = Resources.Load<Texture2D>("whitelight_4");
         //imgPlane1.GetComponent<Renderer>().material.color = Color.white;
         /////
         timer = 0;
         while (timer < fadeTime)
         {
-            imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            fadeMask.color = new Color(0, 0, 0, 1 - timer);
             yield return new WaitForEndOfFrame();
             timer += Time.deltaTime;
         }
         timer = fadeTime;
         while (timer > 0)
         {
-            imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            fadeMask.color = new Color(0, 0, 0, 1 - timer);
             yield return new WaitForEndOfFrame();
             timer -= Time.deltaTime;
         }
         timer = 0;
         while (timer < fadeTime)
         {
-            imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            fadeMask.color = new Color(0, 0, 0, 1 - timer);
             yield return new WaitForEndOfFrame();
             timer += Time.deltaTime;
         }
         timer = fadeTime;
         while (timer > 0)
         {
-            imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            fadeMask.color = new Color(0, 0, 0, 1 - timer);
             yield return new WaitForEndOfFrame();
             timer -= Time.deltaTime;
         }
@@ -257,10 +281,12 @@ public class Server : MonoBehaviour {
         timer = 0;
         while (timer < fadeTime)
         {
-            imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+            fadeMask.color = new Color(0, 0, 0, 1 - timer);
             yield return new WaitForEndOfFrame();
             timer += Time.deltaTime;
         }
+        fadeMask.color = new Color(0, 0, 0, 0);
         hideTimer = (float)showPeriod;
         hideTimerStart = true;
     }
@@ -329,13 +355,16 @@ public class Server : MonoBehaviour {
                         print(Encoding.UTF8.GetString(data));
                         byte[] headerData = data.ToList().GetRange(0, 9).ToArray();
                         string header = Encoding.UTF8.GetString(headerData);
+
                         //guiText.text = header;
                         //print(header);
-                        if(header.Contains("msg"))
+                        if (header.Contains("msg"))
                         {
                             byte[] msgData = data.ToList().GetRange(9, data.Length-9).ToArray(); 
                             string msg = Encoding.UTF8.GetString(msgData);
                             print(msg);
+
+                            AsyncSend(socketConnect, string.Format("Server got msg: " + msg));
                             int moveVertex = 0;
 
                             if (msg.Contains("RTop"))
