@@ -37,6 +37,8 @@ namespace IndieStudio.DrawingAndColoring.Logic
 		/// </summary>
 		public Transform bottomLogo;
 
+        public GameObject uploadDialog;
+        public Text uploadMsg;
 
 		void Start(){
 			isRunning = false;
@@ -81,7 +83,7 @@ namespace IndieStudio.DrawingAndColoring.Logic
 		public IEnumerator PrintScreenCoroutine ()
 		{
 			isRunning = true;
-
+            uploadDialog.SetActive(false);
 			HideObjects ();
 			if(bottomLogo!=null)
 				bottomLogo.gameObject.SetActive (true);
@@ -133,7 +135,8 @@ namespace IndieStudio.DrawingAndColoring.Logic
             isRunning = false;
             //GameObject.FindObjectOfType<Client>().AsyncSend(System.Convert.ToBase64String(texture.EncodeToPNG()));
             GameObject.FindObjectOfType<Client>().SendFile(texture.EncodeToPNG());
-		}
+            uploadDialog.SetActive(true);
+        }
 
 		/// <summary>
 		/// Hide the objects.
@@ -163,5 +166,10 @@ namespace IndieStudio.DrawingAndColoring.Logic
 				obj.gameObject.SetActive (true);
 			}
 		}
+
+        public void SetUploadMsg(string msg)
+        {
+            uploadMsg.text = msg;
+        }
 	}
 }

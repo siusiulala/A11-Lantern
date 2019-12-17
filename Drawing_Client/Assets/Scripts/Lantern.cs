@@ -20,7 +20,7 @@ public class Lantern : MonoBehaviour {
     public GameObject bg2;
     // Use this for initialization
     void Start () {
-        GameObject.Find("System").GetComponent<Client>().Reconnect();
+        //GameObject.Find("System").GetComponent<Client>().Reconnect();
 
     }
 
@@ -81,7 +81,7 @@ public class Lantern : MonoBehaviour {
             }
             countdownText.gameObject.SetActive(false);
             launchText.gameObject.SetActive(true);
-            lanternY += Time.deltaTime;
+            lanternY += Time.deltaTime * 1.5f;
             filledLantern.transform.localPosition = new Vector3(0,lanternY, -2f);
 
             if(lanternY>=7f)

@@ -19,6 +19,10 @@ public class Client : MonoBehaviour {
     //
     Socket client;
     bool startConnect = false;
+    string serverCallbackMsg = "";
+    int sendFileSize = 0;
+    bool uploadRetryFlag = false;
+    float uploadRetryTimer = 5f;
     //public GameObject disconnectDialog;
 
     float socketCheckTimer = 3f;
@@ -69,12 +73,45 @@ public class Client : MonoBehaviour {
                 ToSettingView();
         }
 
+        if (serverCallbackMsg.Contains("Receive file size"))
+        {
+            uploadRetryFlag = false;
+            print(serverCallbackMsg);
+
+            //print(serverCallbackMsg.Substring(19));
+            //int serverGetFileSize;
+            //if(int.TryParse(serverCallbackMsg.Substring(19), out serverGetFileSize))
+            //{
+            //    if(sendFileSize == serverGetFileSize)
+            //    {
+                    if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "2_DrawViewV1")
+                        ToLanternView();
+            //    } 
+            //}
+            serverCallbackMsg = "";
+           
+        }
+
+        if(uploadRetryFlag)
+        {
+            uploadRetryTimer -= Time.deltaTime;
+            if(uploadRetryTimer < 0)
+            {
+                uploadRetryFlag = false;
+                WebPrint webPrint = FindObjectOfType<WebPrint>();
+                if(webPrint != null)
+                {
+                    webPrint.SetUploadMsg("重試...");
+                    webPrint.PrintScreen();
+                }
+            }
+        }
         //if (startConnect)
         //{
         //    socketCheckTimer -= Time.deltaTime;
         //    if (socketCheckTimer <= 0)
         //    {
-                
+
         //        if (SocketConnected(client) && Application.internetReachability != NetworkReachability.NotReachable)
         //        {
         //            print(Application.internetReachability);
@@ -154,6 +191,8 @@ public class Client : MonoBehaviour {
 
     public void SendFile(byte[] fileData)
     {
+        Reconnect();
+
         string IPAddress = serverIP;
         int Port = 5500 + clientId;
 
@@ -168,8 +207,9 @@ public class Client : MonoBehaviour {
         //FileStream fs = new FileStream(Filename, FileMode.Open);
         //bool read = true;
 
+        sendFileSize = fileData.Length;
         int bufferCount = Convert.ToInt32(Math.Ceiling((double)fileData.Length / (double)bufferSize));
-
+        
 
 
         TcpClient tcpClient = new TcpClient(IPAddress, Port);
@@ -201,7 +241,9 @@ public class Client : MonoBehaviour {
 
         tcpClient.Client.Close();
 
-        ToLanternView();
+        uploadRetryFlag = true;
+        uploadRetryTimer = 5f;
+        //ToLanternView();
         
     }
 
@@ -256,12 +298,13 @@ public class Client : MonoBehaviour {
                     int length = socket.EndReceive(asyncResult);
                     if(length>0)
                     {
-                        string msg = Encoding.UTF8.GetString(data);
-                        Debug.Log(msg);
-                        if (msg.Contains("Welcome"))
+                        serverCallbackMsg = Encoding.UTF8.GetString(data);
+                        Debug.Log(serverCallbackMsg);
+                        if (serverCallbackMsg.Contains("Welcome"))
                         {
                             //ToDrawView();
                         }
+                        
                     }
 
                 }
