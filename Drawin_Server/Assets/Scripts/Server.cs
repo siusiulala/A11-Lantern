@@ -13,6 +13,9 @@ using System.IO;
 
 public class Server : MonoBehaviour {
 
+    public GameObject fire;
+    public Animator fireAnimator;
+
     public Image fadeMask;
     float fadeTime = 1f;
     public MeshStudy mesh1;
@@ -81,7 +84,14 @@ public class Server : MonoBehaviour {
             PlayerPrefs.SetInt("ShowPeriod", 300);
             showPeriod = 300;
         }
-       
+
+        if(PlayerPrefs.GetInt("IsShowBeforeRestart")==1)
+        {
+            imageURL1 = PlayerPrefs.GetString("LastImage");
+            needChangeImg = true;
+            newImgComing1 = true;
+
+        }
     }
 
     IEnumerator StartUpFullscreen()
@@ -157,6 +167,7 @@ public class Server : MonoBehaviour {
 
             autoShowFlag = true;
             autoShowTimer = 15f;
+
         }
     }
 
@@ -179,6 +190,9 @@ public class Server : MonoBehaviour {
             newImgComing1 = false;
             needChangeImg = false;
             autoShowFlag = false;
+
+            PlayerPrefs.SetInt("IsShowBeforeRestart", 1);
+            PlayerPrefs.SetString("LastImage", imageURL1);
         }
         
         if(calibrateMode)
@@ -192,14 +206,15 @@ public class Server : MonoBehaviour {
         {
             Texture2D texture = Texture2D.blackTexture;
             imgPlane1.GetComponent<Renderer>().material.mainTexture = texture;
-            try
-            {
-                File.Delete(imageURL1);
-            }
-            catch(Exception e)
-            {
-                print(e.Message);
-            }
+            PlayerPrefs.SetInt("IsShowBeforeRestart", 0);
+            //try
+            //{
+            //    File.Delete(imageURL1);
+            //}
+            //catch(Exception e)
+            //{
+            //    print(e.Message);
+            //}
             imgPlane1.SetActive(false);
             removeImg1 = false;
         }
@@ -211,6 +226,7 @@ public class Server : MonoBehaviour {
             {
                 imgPlane1.SetActive(false);
                  hideTimerStart = false;
+                PlayerPrefs.SetInt("IsShowBeforeRestart",0);
             }
 
         }
@@ -223,61 +239,64 @@ public class Server : MonoBehaviour {
         while (!www.isDone)
             yield return null;
         float timer = fadeTime;
-        while(timer>0)
-        {
-            // imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
-            fadeMask.color = new Color(0, 0, 0, 1 - timer);
-            yield return new WaitForEndOfFrame();
-            timer -= Time.deltaTime;
-        }
-      
-        imgPlane1.GetComponent<Renderer>().material.mainTexture = Resources.Load<Texture2D>("whitelight_4");
+        fire.SetActive(true);
+        fireAnimator.Play("Fire2");
+        yield return new WaitForSeconds(4);
+        //while(timer>0)
+        //{
+        //    // imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+        //    fadeMask.color = new Color(0, 0, 0, 1 - timer);
+        //    yield return new WaitForEndOfFrame();
+        //    timer -= Time.deltaTime;
+        //}
+
+        //imgPlane1.GetComponent<Renderer>().material.mainTexture = Resources.Load<Texture2D>("whitelight_4");
         //imgPlane1.GetComponent<Renderer>().material.color = Color.white;
         /////
-        timer = 0;
-        while (timer < fadeTime)
-        {
-            //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
-            fadeMask.color = new Color(0, 0, 0, 1 - timer);
-            yield return new WaitForEndOfFrame();
-            timer += Time.deltaTime;
-        }
-        timer = fadeTime;
-        while (timer > 0)
-        {
-            //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
-            fadeMask.color = new Color(0, 0, 0, 1 - timer);
-            yield return new WaitForEndOfFrame();
-            timer -= Time.deltaTime;
-        }
-        timer = 0;
-        while (timer < fadeTime)
-        {
-            //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
-            fadeMask.color = new Color(0, 0, 0, 1 - timer);
-            yield return new WaitForEndOfFrame();
-            timer += Time.deltaTime;
-        }
-        timer = fadeTime;
-        while (timer > 0)
-        {
-            //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
-            fadeMask.color = new Color(0, 0, 0, 1 - timer);
-            yield return new WaitForEndOfFrame();
-            timer -= Time.deltaTime;
-        }
+        //timer = 0;
+        //while (timer < fadeTime)
+        //{
+        //    //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+        //    fadeMask.color = new Color(0, 0, 0, 1 - timer);
+        //    yield return new WaitForEndOfFrame();
+        //    timer += Time.deltaTime;
+        //}
+        //timer = fadeTime;
+        //while (timer > 0)
+        //{
+        //    //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+        //    fadeMask.color = new Color(0, 0, 0, 1 - timer);
+        //    yield return new WaitForEndOfFrame();
+        //    timer -= Time.deltaTime;
+        //}
+        //timer = 0;
+        //while (timer < fadeTime)
+        //{
+        //    //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+        //    fadeMask.color = new Color(0, 0, 0, 1 - timer);
+        //    yield return new WaitForEndOfFrame();
+        //    timer += Time.deltaTime;
+        //}
+        //timer = fadeTime;
+        //while (timer > 0)
+        //{
+        //    //imgPlane1.GetComponent<Renderer>().material.color = new Color(timer / fadeTime, timer / fadeTime, timer / fadeTime);
+        //    fadeMask.color = new Color(0, 0, 0, 1 - timer);
+        //    yield return new WaitForEndOfFrame();
+        //    timer -= Time.deltaTime;
+        //}
         //////
-
-        Texture2D source = www.texture;
-        Texture2D textureRev = new Texture2D(source.width, source.height);
-        Color[] pix = source.GetPixels(0, 0, source.width, source.height);
-        for (int i = 0; i < pix.Length; i++)
-        {
-            pix[i] = new Color(1f - pix[i].r, 1f - pix[i].g, 1f - pix[i].b);
-        }
-        textureRev.SetPixels(pix);
-        textureRev.Apply();
-        imgPlane1.GetComponent<Renderer>().material.mainTexture = textureRev;
+        fire.SetActive(false);
+        //Texture2D source = www.texture;
+        //Texture2D textureRev = new Texture2D(source.width, source.height);
+        //Color[] pix = source.GetPixels(0, 0, source.width, source.height);
+        //for (int i = 0; i < pix.Length; i++)
+        //{
+        //    pix[i] = new Color(1f - pix[i].r, 1f - pix[i].g, 1f - pix[i].b);
+        //}
+        //textureRev.SetPixels(pix);
+        //textureRev.Apply();
+        imgPlane1.GetComponent<Renderer>().material.mainTexture = www.texture;
         timer = 0;
         while (timer < fadeTime)
         {
@@ -287,6 +306,8 @@ public class Server : MonoBehaviour {
             timer += Time.deltaTime;
         }
         fadeMask.color = new Color(0, 0, 0, 0);
+       
+
         hideTimer = (float)showPeriod;
         hideTimerStart = true;
     }
