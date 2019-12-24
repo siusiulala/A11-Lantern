@@ -97,6 +97,15 @@ namespace IndieStudio.DrawingAndColoring.Logic
             print(texture.width +","+texture.height);
             texture.ReadPixels(new Rect(0, 0, 1200 * Screen.width / 1200, 1540 * Screen.height / 1920), 0, 0);
 			texture.Apply();
+
+            Texture2D textureRev = new Texture2D(texture.width, texture.height);
+            Color[] pix = texture.GetPixels(0, 0, texture.width, texture.height);
+            for(int i=0; i<pix.Length; i++)
+            {
+                pix[i] = new Color(1f - pix[i].r, 1f - pix[i].g, 1f - pix[i].b);
+            }
+            textureRev.SetPixels(pix);
+            textureRev.Apply();
             //Texture2D textureR = RotateTexture(texture, false);
             /*
             Texture2D textureBig = new Texture2D(2464, 1540);
@@ -129,12 +138,12 @@ namespace IndieStudio.DrawingAndColoring.Logic
 			if(bottomLogo!=null)
 				bottomLogo.gameObject.SetActive (false);
 #if UNITY_EDITOR
-            File.WriteAllBytes(Application.persistentDataPath + "/" + imageName + ".png", texture.EncodeToPNG());
+            File.WriteAllBytes(Application.persistentDataPath + "/" + imageName + ".png", textureRev.EncodeToPNG());
 #endif
             //Application.ExternalCall("PrintImage", System.Convert.ToBase64String(texture.EncodeToPNG()),imageName);
             isRunning = false;
             //GameObject.FindObjectOfType<Client>().AsyncSend(System.Convert.ToBase64String(texture.EncodeToPNG()));
-            GameObject.FindObjectOfType<Client>().SendFile(texture.EncodeToPNG());
+            GameObject.FindObjectOfType<Client>().SendFile(textureRev.EncodeToPNG());
             uploadDialog.SetActive(true);
         }
 

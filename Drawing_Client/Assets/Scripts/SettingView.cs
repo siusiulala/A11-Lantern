@@ -39,4 +39,10 @@ public class SettingView : MonoBehaviour {
         UnityEngine.SceneManagement.SceneManager.LoadScene("9_IpSetting");
     }
 
+
+    public void ToRebootView()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("10_Reboot");
+    }
+
 }

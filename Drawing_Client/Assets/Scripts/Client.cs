@@ -17,7 +17,9 @@ public class Client : MonoBehaviour {
     string serverIP = "127.0.0.1";
     string projectorIP = "127.0.0.1";
     //
+
     Socket client;
+    Socket rebootClient;
     bool startConnect = false;
     string serverCallbackMsg = "";
     int sendFileSize = 0;
@@ -213,8 +215,8 @@ public class Client : MonoBehaviour {
 
 
         TcpClient tcpClient = new TcpClient(IPAddress, Port);
-        tcpClient.SendTimeout = 600000;
-        tcpClient.ReceiveTimeout = 600000;
+        tcpClient.SendTimeout = 4000;
+        tcpClient.ReceiveTimeout = 4000;
         string fileName = DateTime.Now.ToString("yyyyMMddhhmmss") + ".png";
         string headerStr = "Content-length:" + fileData.Length.ToString() + "\r\nFilename:" + fileName + "\r\n";
         header = new byte[bufferSize];
@@ -382,5 +384,29 @@ public class Client : MonoBehaviour {
     {
         ClientDisconnect();
         AsyncConnect();
+    }
+
+    public void RebootWindows()
+    {
+        try
+        {
+            IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(serverIP), 2266);
+            //建立套接字
+            rebootClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            //開始連線到伺服器
+            rebootClient.BeginConnect(ipe, asyncResult =>
+            {
+                rebootClient.EndConnect(asyncResult);
+                //向伺服器傳送訊息
+                AsyncSend(rebootClient, "reboot");
+                //接受訊息
+                AsyncReceive(rebootClient);
+            }, null);
+        }
+        catch (Exception ex)
+        {
+
+        }
+
     }
 }
